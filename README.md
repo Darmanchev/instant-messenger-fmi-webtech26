@@ -15,7 +15,7 @@ Instant messenger built with FastAPI, PostgreSQL, WebSocket and Bootstrap.
 ### 1. Clone the repo
 ```bash
 git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
-cd fastapi-messenger
+cd instant-messenger-fmi-webtech26
 ```
 
 ### 2. Create `.env` file
