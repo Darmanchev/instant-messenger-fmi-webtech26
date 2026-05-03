@@ -1,8 +1,0 @@
-.idea/
-.vscode/
-.env
-.venv/
-virtualenvs/
-__pycache__/
-*.pyc
-postgres_data/
