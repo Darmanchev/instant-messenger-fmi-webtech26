@@ -7,7 +7,7 @@ STORAGES_FILE = docker_compose/storages.yaml
 APP_CONTAINER = main-app
 
 
-PHONY: app
+.PHONY: app
 app:
 	${DC} -f ${APP_FILE} ${ENV} up --build -d
 
@@ -34,3 +34,11 @@ app-shell:
 .PHONY: app-logs
 app-logs:
 	${LOGS} ${APP_CONTAINER} -f
+
+.PHONY: seed
+seed:
+	${EXEC} -w / ${APP_CONTAINER} env PYTHONPATH=. python app/server/seed.py
+
+.PHONY: all-down
+all-down:
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} down

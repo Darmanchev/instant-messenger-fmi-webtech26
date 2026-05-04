@@ -48,7 +48,7 @@ async def seed():
         db.add_all(messages)
         await db.commit()
 
-    print("✅ БД е успешно инициализирана с демо данни!")
+    print("БД е успешно инициализирана с демо данни!")
 
 
 if __name__ == "__main__":
