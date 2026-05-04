@@ -9,28 +9,6 @@
     <link rel="stylesheet" href="../styles/style.css">
 </head>
 <body>
-    <!--модален прозорец за създаване на канал-->
-    <div class="modal fade" id="createChannelModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Създаване на канал</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" class="form-control" id="newChannelName"
-                           placeholder="име-на-канал" minlength="2" maxlength="50">
-                    <div class="text-danger small mt-1" id="channelError"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">Отказ</button>
-                    <button type="button" class="btn btn-primary"
-                            onclick="createChannel()">Създай</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 <!--навигационна лента-->
 
@@ -60,12 +38,8 @@
                          placeholder="Търсене на канали..."
                          oninput="filterChannels(this.value)">
             </div>
-            <button class="btn btn-secondary btn-sm w-98 me-2 mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#createChannelModal">
-                    <i class="bi bi-plus-lg me-1"></i>Нов канал
-            </button>
-            <!--списък с канали-->
-            <div class="list-group list-group-flush overflow-auto me-2 rounded-1" id="channelsList">
-            </div>
+
+            <div class="list-group list-group-flush overflow-auto" id="channelsList"></div>
         </div>
 
         <!--зона за чат-->
@@ -76,21 +50,9 @@
                     <span id="headerIcon" class="fs-5 me-2"></span>
                     <h6 class="mb-0" id="headerName">—</h6>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <!-- търсене в канала -->
-                    <div class="input-group input-group-sm" style="width: 220px;">
-                        <input type="text" class="form-control" id="messageSearch" placeholder="Търсене в канала..."
-                               oninput="searchMessages(this.value)">
-                        <button class="btn btn-outline-secondary" onclick="clearSearch()">
-                                <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                    <!-- изтриване на канал -->
-                    <button class="btn btn-link text-danger p-0" onclick="deleteChannel()">
-                            <i class="bi bi-trash"></i>
-                    </button>
-                </div>
             </div>
+
+
             <!--зона за съобщения-->
             <div class="messages-area flex-grow-1 p-4 overflow-auto">
                 <div class="d-flex flex-column gap-3" id="messagesContainer"></div>
@@ -98,7 +60,7 @@
             <!--зона за въвеждане-->
             <div class="p-3 border-top bg-light">
                 <div class="input-group">
-                    <input type="text" class="form-control border-0 bg-white rounded-1 me-2" id="msgInput" placeholder="Напишете съобщение..."
+                    <input type="text" class="form-control border-0 bg-white" id="msgInput" placeholder="Напишете съобщение..."
                     onkeydown="if (event.key === 'Enter') sendMessage()">
                     <button class="btn btn-primary px-4" onclick="sendMessage()">
                         <i class="bi bi-send-fill"></i>

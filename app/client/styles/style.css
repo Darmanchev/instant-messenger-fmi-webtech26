@@ -18,15 +18,32 @@ body {
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
+.chat-container > .row {
+    flex: 1;
+    min-height: 0;
+}
+
+.chat-container .col-md-4,
+.chat-container .col-md-8,
+.chat-container .col-lg-3,
+.chat-container .col-lg-9 {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Важно для внутреннего скролла */
+    min-height: 0;
+}
+
 .chat-container {
     flex:1;
     min-height: 0;
     background: white;
     overflow: hidden;
+    height: calc(100vh - 56px);
+    display: flex; flex-direction: column;
 }
 
 .messages-area {
-    height: 100%;
+    flex-grow: 1;
     overflow-y: auto;
     background-color: #e5ddd5;
     padding: 15px;
