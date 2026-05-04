@@ -1,6 +1,45 @@
 const API = 'http://localhost:8000/api/v1';
+const WS  = 'ws://localhost:8000/api/v1';
 
-// Икони и цветове за каналите — само визуални, не данни
+// проверка на токен
+const token = localStorage.getItem('token');
+if (!token) {
+    window.location.href = 'login.html';
+}
+
+// помощна функция за заявки с токен
+function authFetch(url, options = {}) {
+    return fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            ...options.headers,
+        },
+    });
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+}
+
+let currentUser = null;
+
+async function loadCurrentUser() {
+    try {
+        const res = await authFetch(`${API}/auth/me`);
+        if (!res.ok) { logout(); return; }
+        currentUser = await res.json();
+
+        const el = document.getElementById('currentUsername');
+        if (el) el.textContent = currentUser.username;
+    } catch (err) {
+        console.error('Грешка при зареждане на потребител', err);
+    }
+}
+
+// икони и цветове по подразбиране за каналите
 const CHANNEL_META = {
     'general':       { icon: '💬', color: '3d8bfd' },
     'random':        { icon: '🎲', color: '20c997' },
@@ -14,37 +53,61 @@ function getMeta(name) {
 }
 
 let currentId   = null;
-let allChannels = [];   // запазваме каналите от API
+let allChannels = [];
 
-// ── Зареждане на канали от API ────────────────
+let socket = null;
+
+function connectWebSocket(channelId) {
+    // затваряме предишното свързване
+    if (socket) socket.close();
+
+    socket = new WebSocket(`${WS}/ws/${channelId}?token=${token}`);
+
+    socket.onopen = () => {
+        console.log(`WebSocket свързан с канал ${channelId}`);
+    };
+
+    socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        appendMessage(msg); // добавяме съобщението в DOM
+    };
+
+    socket.onclose = () => {
+        console.log('WebSocket затворен');
+    };
+
+    socket.onerror = (err) => {
+        console.error('WebSocket грешка:', err);
+    };
+}
+
+// зареждане на канали от API
 async function loadChannels() {
     try {
-        const res      = await fetch(`${API}/channels`);
+        const res      = await authFetch(`${API}/channels`);
         const channels = await res.json();
         allChannels    = channels;
         renderChannels(channels);
 
-        // отваряме първия канал
         if (channels.length > 0) {
             switchChannel(channels[0].id);
         }
     } catch (err) {
-        console.error('Грешка при зареждане на каналите:', err);
+        console.error('Грешка при зареждане на канали:', err);
     }
 }
 
-// ── Зареждане на съобщения на канал от API ────
+// зареждане на съобщения от API
 async function loadMessages(channelId) {
     try {
-        const res      = await fetch(`${API}/channels/${channelId}/messages`);
+        const res      = await authFetch(`${API}/channels/${channelId}/messages`);
         const messages = await res.json();
         renderMessages(messages);
     } catch (err) {
-        console.error('Грешка при зареждане на съобщенията:', err);
+        console.error('Грешка при зареждане на съобщения:', err);
     }
 }
 
-// ── Рендиране на списъка с канали ─────────────
 function renderChannels(list) {
     const el = document.getElementById('channelsList');
     el.innerHTML = '';
@@ -75,7 +138,6 @@ function renderChannels(list) {
     });
 }
 
-// ── Филтриране на канали ──────────────────────
 function filterChannels(q) {
     const filtered = allChannels.filter(c =>
         c.name.toLowerCase().includes(q.toLowerCase())
@@ -83,105 +145,126 @@ function filterChannels(q) {
     renderChannels(filtered);
 }
 
-// ── Превключване на канал ─────────────────────
 function switchChannel(id) {
-    currentId  = id;
-    const ch   = allChannels.find(c => c.id === id);
+    currentId = id;
+    const ch  = allChannels.find(c => c.id === id);
     if (!ch) return;
 
     const meta = getMeta(ch.name);
 
-    // обновяваме страничната лента
     renderChannels(allChannels);
 
-    // обновяваме заглавието
     document.getElementById('headerIcon').textContent = meta.icon;
     document.getElementById('headerName').textContent = '# ' + ch.name;
 
-    // зареждаме съобщенията от API
+    // зареждане на история и свързване с WebSocket
     loadMessages(id);
+    connectWebSocket(id);
 }
 
-// ── Рендиране на съобщения ────────────────────
+// показване на всички съобщения
 function renderMessages(msgs) {
     const container = document.getElementById('messagesContainer');
     container.innerHTML = '';
+    msgs.forEach(m => appendMessage(m));
+}
 
-    msgs.forEach(m => {
-        const div = document.createElement('div');
+function appendMessage(m, highlight = '') {
+    const container = document.getElementById('messagesContainer');
+    const div       = document.createElement('div');
+    const isMe      = currentUser && m.author.username === currentUser.username;
 
-        // message.author.username — идва от API (MessageOut → author: UserOut)
-        const isMe = m.author.username === 'alice'; // временно — ще заменим с JWT
+    div.className      = 'p-2 px-3 rounded-3 shadow-sm position-relative msg-bubble ' +
+        (isMe ? 'bg-primary text-white align-self-end' : 'bg-light align-self-start');
+    div.style.maxWidth = '75%';
 
-        div.className  = 'p-2 px-3 rounded-3 shadow-sm ' +
-            (isMe ? 'bg-primary text-white align-self-end' : 'bg-light align-self-start');
-        div.style.maxWidth = '75%';
+    let content = m.content;
+    if (highlight) {
+        const re = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        content  = content.replace(re, '<mark>$1</mark>');
+    }
 
-        if (!isMe) {
-            div.innerHTML = `
-                <small class="fw-semibold d-block text-primary mb-1">${m.author.username}</small>
-                ${m.content}
-                <small class="d-block text-muted mt-1" style="font-size:0.7rem">
-                    ${new Date(m.sent_at).toLocaleTimeString('bg', { hour: '2-digit', minute: '2-digit' })}
-                </small>`;
-        } else {
-            div.innerHTML = `
-                ${m.content}
-                <small class="d-block text-white-50 mt-1" style="font-size:0.7rem">
-                    ${new Date(m.sent_at).toLocaleTimeString('bg', { hour: '2-digit', minute: '2-digit' })}
-                </small>`;
-        }
+    // бутон за изтриване само за собствени съобщения
+    const deleteBtn = isMe ? `
+        <button class="btn btn-sm delete-msg-btn"
+                onclick="deleteMessage(${m.id})"
+                title="Изтрий">
+            <i class="bi bi-trash" style="font-size:0.7rem"></i>
+        </button>` : '';
 
-        container.appendChild(div);
-    });
+    if (!isMe) {
+        div.innerHTML = `
+            <small class="fw-semibold d-block text-primary mb-1">${m.author.username}</small>
+            ${content}
+            <small class="d-block text-muted mt-1" style="font-size:0.7rem">
+                ${new Date(m.sent_at).toLocaleTimeString('bg', { hour: '2-digit', minute: '2-digit' })}
+            </small>`;
+    } else {
+        div.innerHTML = `
+            ${deleteBtn}
+            ${content}
+            <small class="d-block text-white-50 mt-1" style="font-size:0.7rem">
+                ${new Date(m.sent_at).toLocaleTimeString('bg', { hour: '2-digit', minute: '2-digit' })}
+            </small>`;
+    }
 
-    // превъртане надолу
+    div.dataset.messageId = m.id;
+
+    container.appendChild(div);
     const area = document.querySelector('.messages-area');
     area.scrollTop = area.scrollHeight;
 }
 
-// ── Изпращане на съобщение (засега локално) ───
+async function deleteMessage(messageId) {
+    if (!confirm('Изтрий съобщението?')) return;
+
+    try {
+        const res = await authFetch(
+            `${API}/channels/${currentId}/messages/${messageId}`,
+            { method: 'DELETE' }
+        );
+
+        if (res.status === 204) {
+            // премахваме съобщението от DOM
+            const el = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (el) el.remove();
+        }
+    } catch (err) {
+        console.error('Грешка при изтриване на съобщение:', err);
+    }
+}
+
+// изпращане чрез WebSocket
 function sendMessage() {
     const input = document.getElementById('msgInput');
     const text  = input.value.trim();
-    if (!text || !currentId) return;
+    if (!text || !socket || socket.readyState !== WebSocket.OPEN) return;
 
-    // TODO: замени с WebSocket след авторизация
-    const div = document.createElement('div');
-    div.className  = 'p-2 px-3 rounded-3 shadow-sm bg-primary text-white align-self-end';
-    div.style.maxWidth = '75%';
-    div.textContent    = text;
-
-    document.getElementById('messagesContainer').appendChild(div);
+    socket.send(JSON.stringify({ content: text }));
     input.value = '';
-
-    const area = document.querySelector('.messages-area');
-    area.scrollTop = area.scrollHeight;
 }
 
-// ── Изтриване на канал ────────────────────────
 async function deleteChannel() {
     if (!currentId) return;
 
     const ch = allChannels.find(c => c.id === currentId);
-    if (!confirm(`Изтриване на канал #${ch.name}?`)) return;
+    if (!confirm(`Изтрий канал #${ch.name}?`)) return;
 
     try {
-        const res = await fetch(`${API}/channels/${currentId}`, {
+        const res = await authFetch(`${API}/channels/${currentId}`, {
             method: 'DELETE',
         });
 
         if (res.status === 204) {
-            // махаме от списъка
+            if (socket) socket.close();
+
             allChannels = allChannels.filter(c => c.id !== currentId);
             currentId   = null;
 
-            // изчистваме заглавието и съобщенията
             document.getElementById('headerIcon').textContent = '';
             document.getElementById('headerName').textContent = '—';
             document.getElementById('messagesContainer').innerHTML = '';
 
-            // превключваме към първия останал канал
             renderChannels(allChannels);
             if (allChannels.length > 0) {
                 switchChannel(allChannels[0].id);
@@ -192,11 +275,10 @@ async function deleteChannel() {
     }
 }
 
-// ── Създаване на канал ────────────────────────
 async function createChannel() {
-    const input    = document.getElementById('newChannelName');
-    const errorEl  = document.getElementById('channelError');
-    const name     = input.value.trim().toLowerCase().replace(/\s+/g, '-');
+    const input   = document.getElementById('newChannelName');
+    const errorEl = document.getElementById('channelError');
+    const name    = input.value.trim().toLowerCase().replace(/\s+/g, '-');
 
     if (name.length < 2) {
         errorEl.textContent = 'Минимум 2 символа';
@@ -204,9 +286,8 @@ async function createChannel() {
     }
 
     try {
-        const res = await fetch(`${API}/channels`, {
+        const res = await authFetch(`${API}/channels`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name }),
         });
 
@@ -218,16 +299,13 @@ async function createChannel() {
 
         const channel = await res.json();
 
-        // затваряме модалния прозорец
         bootstrap.Modal.getInstance(
             document.getElementById('createChannelModal')
         ).hide();
 
-        // изчистваме полето
-        input.value     = '';
+        input.value         = '';
         errorEl.textContent = '';
 
-        // добавяме в списъка и превключваме
         allChannels.push(channel);
         renderChannels(allChannels);
         switchChannel(channel.id);
@@ -238,5 +316,44 @@ async function createChannel() {
     }
 }
 
-// ── Старт ─────────────────────────────────────
+async function searchMessages(q) {
+    if (!currentId) return;
+
+    // ако търсенето е празно, показваме всички съобщения
+    if (!q.trim()) {
+        loadMessages(currentId);
+        return;
+    }
+
+    try {
+        const res  = await authFetch(`${API}/channels/${currentId}/search?q=${encodeURIComponent(q)}`);
+        const msgs = await res.json();
+
+        const container = document.getElementById('messagesContainer');
+        container.innerHTML = '';
+
+        if (msgs.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted mt-4">
+                    <i class="bi bi-search me-1"></i>
+                    Няма резултати за "${q}"
+                </div>`;
+            return;
+        }
+
+        // показване на намерените съобщения
+        msgs.forEach(m => appendMessage(m, q));
+
+    } catch (err) {
+        console.error('Грешка при търсене:', err);
+    }
+}
+
+function clearSearch() {
+    const input = document.getElementById('messageSearch');
+    if (input) input.value = '';
+    if (currentId) loadMessages(currentId);
+}
+
+loadCurrentUser();
 loadChannels();
