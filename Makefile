@@ -4,7 +4,7 @@ LOGS = docker logs
 ENV = --env-file .env
 APP_FILE = docker_compose/app.yaml
 STORAGES_FILE = docker_compose/storages.yaml
-APP_CONTAINER = main-app
+APP_CONTAINER = instantmessenger_app
 
 
 .PHONY: app
@@ -28,16 +28,16 @@ storages-down:
 	${DC} -f ${STORAGES_FILE} down
 
 .PHONY: app-shell
-app-shell:
+shell:
 	${EXEC} ${APP_CONTAINER} bash
 
 .PHONY: app-logs
-app-logs:
+logs:
 	${LOGS} ${APP_CONTAINER} -f
 
 .PHONY: seed
 seed:
-	${EXEC} -w / ${APP_CONTAINER} env PYTHONPATH=. python app/server/seed.py
+	${EXEC} -w /fastapi-messenger ${APP_CONTAINER} env PYTHONPATH=. python app/server/seed.py
 
 .PHONY: all-down
 all-down:

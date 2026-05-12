@@ -1,54 +1,42 @@
-Instant messenger built with FastAPI, PostgreSQL, WebSocket and Bootstrap.
+## Instant Messenger
 
-## Tech Stack
+Real-time chat built with FastAPI, PostgreSQL, WebSocket and Bootstrap.
 
-- **Backend**: FastAPI, SQLAlchemy, PostgreSQL, WebSocket
-- **Frontend**: HTML, Bootstrap 5, JavaScript
-- **Auth**: JWT
-- **Infra**: Docker, Docker Compose, Poetry
+**Stack:** FastAPI · PostgreSQL · WebSocket · JWT · Docker · Bootstrap 5
+
+---
 
 ## Quick Start
 
-### 1. Clone the repo
+### 1. Clone
 ```bash
 git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
-cd fastapi-messenger
+cd instant-messenger-fmi-webtech26
 ```
 
-### 2. Create `.env` file
+### 2. Create `.env`
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` if needed (default values work out of the box):
-```env
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=admin
-POSTGRES_DB=bestmessenger
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/bestmessenger
-SECRET_KEY=secret
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-```
+`.env` по умолчанию готов к использованию — ничего менять не нужно.
 
-### 3. Start the app
+### 3. Start
 ```bash
 make all
 ```
 
-### 4. Seed the database
+### 4. Open in browser
+```
+http://localhost:8088/login
+```
+
+### 5. (Optional) Seed demo data
 ```bash
 make seed
 ```
 
-### 5. Open in browser
-```
-http://localhost:8000/docs   ← API docs
-```
-
-Open `http://localhost:8000/login` in your browser.
-
-Demo accounts:
+Demo accounts after seed:
 ```
 alice@test.com  / 123456
 bob@test.com    / 123456
@@ -59,40 +47,47 @@ admin@test.com  / admin
 
 ## Commands
 
-```bash
-make all            # start everything (DB + APP)
-make storages       # start only PostgreSQL
-make app            # start only APP
-make all-down       # stop everything
-make app-logs       # view APP logs
-make app-shell      # open terminal inside APP container
-make seed           # fill DB with initial data
-```
+| Command | Description |
+|---|---|
+| `make all` | Start DB + App |
+| `make all-down` | Stop everything |
+| `make logs` | View app logs |
+| `make shell` | Terminal inside app container |
+| `make seed` | Fill DB with demo data |
+| `make storages` | Start only DB |
+| `make app` | Start only App |
+
+---
+
+## Ports
+
+| Service | Port |
+|---|---|
+| App | http://localhost:8088 |
+| PostgreSQL | localhost:5433 |
+| API docs | http://localhost:8088/docs |
 
 ---
 
 ## Project Structure
 
 ```
-fastapi_chat/
-├── pyproject.toml
-├── .env.example
-├── Makefile
 ├── Dockerfile
+├── Makefile
+├── .env.example
 ├── docker_compose/
-│   ├── app.yaml
-│   └── storages.yaml
+│   ├── app.yaml        # app container
+│   └── storages.yaml   # postgres container
 └── app/
     ├── client/
-    │   ├── html/
-    │   ├── scripts/
-    │   └── styles/
+    │   ├── html/       # login, register, chat pages
+    │   ├── scripts/    # JS
+    │   └── styles/     # CSS
     └── server/
         ├── main.py
-        ├── core/
+        ├── api/        # endpoints
+        ├── core/       # auth, config, websocket
         ├── db/
         ├── models/
-        ├── schemas/
-        ├── services/
-        └── api/
+        └── schemas/
 ```

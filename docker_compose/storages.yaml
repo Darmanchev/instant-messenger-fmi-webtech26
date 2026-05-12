@@ -1,22 +1,25 @@
-version: '3.9'
-
-name: bestmessenger
+name: instantmessenger
 
 services:
   db:
     image: postgres:17
-    container_name: bestmessenger_db
+    container_name: instantmessenger_db
     restart: unless-stopped
+    networks:
+      - backend
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-      POSTGRES_DB: ${POSTGRES_DB:-bestmessenger}
+      POSTGRES_DB: ${POSTGRES_DB:-instantmessenger}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "5433:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
-    networks:
-      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-instantmessenger}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:

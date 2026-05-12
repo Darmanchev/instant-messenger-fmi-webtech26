@@ -9,9 +9,8 @@ from sqlalchemy import select
 from app.server.core.config import settings
 from app.server.db.database import get_db
 from app.server.models.user import User
-#hash lib
 
-# ── Bcrypt ────────────────────────────────────
+# create password hash
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
@@ -20,7 +19,7 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
-# ── JWT ───────────────────────────────────────
+# create JWT
 def create_token(user_id: int) -> str:
     expire = datetime.utcnow() + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -33,12 +32,11 @@ def decode_token(token: str) -> int:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("sub")
         if user_id is None:
-            raise HTTPException(status_code=401, detail="Невалидный токен")
+            raise HTTPException(status_code=401, detail="Invalid token")
         return int(user_id)
     except JWTError:
-        raise HTTPException(status_code=401, detail="Невалидный токен")
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-# ── Dependency ────────────────────────────────
 oauth2_scheme = HTTPBearer()
 
 async def get_current_user(
@@ -52,6 +50,6 @@ async def get_current_user(
     user   = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(status_code=401, detail="Пользователь не найден")
+        raise HTTPException(status_code=401, detail="User not found")
 
     return user

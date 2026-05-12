@@ -1,8 +1,9 @@
-const API = 'http://localhost:8000/api/v1';
+const HOST = window.location.host;
+const API  = `http://${HOST}/api/v1`;
 
-// Ако вече е влязъл — веднага към чата
+// if already log in go to chat
 if (localStorage.getItem('token')) {
-    window.location.href = 'chat.html';
+    window.location.replace('/chat');
 }
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -13,9 +14,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const errorMsg = document.getElementById('errorMsg');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Блокираме бутона докато тече заявката
+    // deactivate btn while searching
     submitBtn.disabled    = true;
-    submitBtn.textContent = 'Зареждане...';
+    submitBtn.textContent = 'Loading...';
     errorMsg.classList.add('d-none');
 
     try {
@@ -28,23 +29,22 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const data = await res.json();
 
         if (!res.ok) {
-            // Показваме грешката от сървъра
-            errorMsg.textContent = data.detail || 'Грешка при вход';
+            errorMsg.textContent = data.detail || 'Login error';
             errorMsg.classList.remove('d-none');
             return;
         }
 
-        // Запазваме токена
+        // save token
         localStorage.setItem('token', data.access_token);
 
-        // Преминаваме към чата
-        window.location.href = 'chat.html';
+        // go to our chat page
+        window.location.replace('/chat');
 
     } catch (err) {
-        errorMsg.textContent = 'Грешка при свързване със сървъра';
+        errorMsg.textContent = 'Error connecting to the server';
         errorMsg.classList.remove('d-none');
     } finally {
         submitBtn.disabled    = false;
-        submitBtn.textContent = 'Влез';
+        submitBtn.textContent = 'Log in';
     }
 });

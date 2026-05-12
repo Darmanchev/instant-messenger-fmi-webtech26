@@ -13,17 +13,17 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=Token, status_code=201)
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
-    # Проверяваме дали имейлът е свободен
+    # check if email is already registered
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Имейлът вече е зает")
+        raise HTTPException(status_code=400, detail="This email address is already taken")
 
-    # Проверяваме дали потребителското име е свободно
+    # check if username is already registered
     result = await db.execute(select(User).where(User.username == data.username))
     if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Потребителското име вече е заето")
+        raise HTTPException(status_code=400, detail="That username is already taken")
 
-    # Създаваме потребител — хешираме паролата
+    # create new user and hash password
     user = User(
         username=data.username,
         email=data.email,
@@ -33,21 +33,21 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(user)
 
-    # Веднага издаваме токен — не е нужен отделен вход
+    # give access token
     return {"access_token": create_token(user.id)}
 
 
 @router.post("/login", response_model=Token)
 async def login(data: LoginData, db: AsyncSession = Depends(get_db)):
-    # Търсим потребител по имейл
+    # search for user by email
     result = await db.execute(select(User).where(User.email == data.email))
     user   = result.scalar_one_or_none()
 
-    # Проверяваме паролата
+    # verify password
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(
             status_code=401,
-            detail="Невалиден имейл или парола",
+            detail="Incorrect email or password",
         )
 
     return {"access_token": create_token(user.id)}
@@ -55,5 +55,5 @@ async def login(data: LoginData, db: AsyncSession = Depends(get_db)):
 
 @router.get("/me", response_model=UserOut)
 async def get_me(current_user: User = Depends(get_current_user)):
-    """Връща данните на текущия потребител по токен"""
+    """Returns the current user's data based on the token"""
     return current_user

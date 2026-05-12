@@ -15,3 +15,4 @@ class User(Base):
 
     # relationships
     messages = relationship("Message", back_populates="author")
+    created_channels = relationship("Channel", back_populates="creator")

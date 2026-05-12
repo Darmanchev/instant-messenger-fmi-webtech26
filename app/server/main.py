@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.server.core.config import settings
 from app.server.db.database import engine
@@ -17,23 +19,28 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
-# ── CORS ──────────────────────────────────────
+# ── Middleware ─────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "http://localhost:3000",
-        "http://localhost:63342",
-    ],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="app/client"), name="static")
+
+# pages
+@app.get("/login")
+async def login_page():
+    return FileResponse("app/client/html/login.html")
+
+@app.get("/register")
+async def register_page():
+    return FileResponse("app/client/html/register.html")
+
+@app.get("/chat")
+async def chat_page():
+    return FileResponse("app/client/html/chat.html")
+
 from app.server.api.v1.router import router
 app.include_router(router)
-
-
-@app.get("/")
-async def root():
-    return {"status": f"{settings.APP_NAME} is running"}

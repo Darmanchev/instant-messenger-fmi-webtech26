@@ -10,7 +10,7 @@ python = "^3.12"
 fastapi = "^0.135.1"
 motor = "^3.7.1"
 uvicorn = "^0.41.0"
-pydantic = {version = "^2.12.5", extras = ["email"]}
+pydantic = {extras = ["email"], version = "^2.12.5"}
 pydantic-settings = "^2.13.1"
 python-jose = {extras = ["cryptography"], version = "^3.5.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
@@ -22,6 +22,8 @@ psycopg2-binary = "^2.9.11"
 asyncpg = "^0.31.0"
 greenlet = "^3.3.2"
 bcrypt = "4.0.1"
+email-validator = "^2.2.0"
+aiofiles = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
