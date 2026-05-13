@@ -1,8 +1,8 @@
-## Instant Messenger
+## InstantMessenger
 
-Real-time chat built with FastAPI, PostgreSQL, WebSocket and Bootstrap.
+Real-time chat built with FastAPI, PostgreSQL, WebSocket and React.
 
-**Stack:** FastAPI · PostgreSQL · WebSocket · JWT · Docker · Bootstrap 5
+**Stack:** FastAPI · PostgreSQL · WebSocket · JWT · React · Bootstrap 5 · Docker
 
 ---
 
@@ -26,9 +26,11 @@ cp .env.example .env
 make all
 ```
 
+`make all` автоматически соберёт React-фронтенд и поднимет контейнеры.
+
 ### 4. Open in browser
 ```
-http://localhost:8088/login
+http://localhost:8088
 ```
 
 ### 5. (Optional) Seed demo data
@@ -49,13 +51,15 @@ admin@test.com  / admin
 
 | Command | Description |
 |---|---|
-| `make all` | Start DB + App |
+| `make all` | Build frontend + start DB + App |
 | `make all-down` | Stop everything |
+| `make build-frontend` | Rebuild React app only |
 | `make logs` | View app logs |
 | `make shell` | Terminal inside app container |
 | `make seed` | Fill DB with demo data |
 | `make storages` | Start only DB |
-| `make app` | Start only App |
+| `make app` | Start only App (DB must be running) |
+| `make app-down` | Stop only App |
 
 ---
 
@@ -78,16 +82,27 @@ admin@test.com  / admin
 ├── docker_compose/
 │   ├── app.yaml        # app container
 │   └── storages.yaml   # postgres container
-└── app/
-    ├── client/
-    │   ├── html/       # login, register, chat pages
-    │   ├── scripts/    # JS
-    │   └── styles/     # CSS
-    └── server/
-        ├── main.py
-        ├── api/        # endpoints
-        ├── core/       # auth, config, websocket
-        ├── db/
-        ├── models/
-        └── schemas/
+├── backend/
+│   ├── main.py
+│   ├── seed.py
+│   ├── api/v1/
+│   │   └── endpoints/  # auth, channels, messages, ws
+│   ├── core/           # auth, config, websocket
+│   ├── db/
+│   ├── models/
+│   └── schemas/
+└── frontend/
+    ├── src/
+    │   ├── pages/      # Login, Register, Chat
+    │   └── components/ # ChannelList, MessageList, MessageInput, CreateChannelModal
+    ├── vite.config.js
+    └── package.json
+```
+
+---
+
+## Development (frontend hot-reload)
+
+```bash
+cd frontend && npm run dev
 ```

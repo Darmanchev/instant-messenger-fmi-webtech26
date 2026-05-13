@@ -15,8 +15,12 @@ app:
 storages:
 	${DC} -f ${STORAGES_FILE} ${ENV} up --build -d
 
+.PHONY: build-frontend
+build-frontend:
+	cd frontend && npm run build
+
 .PHONY: all
-all:
+all: build-frontend
 	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} ${ENV} up --build -d
 
 .PHONY: app-down
