@@ -40,11 +40,6 @@ logs:
 seed:
 	${EXEC} -w /app ${APP_CONTAINER} env PYTHONPATH=. python backend/seed.py
 
-
-.PHONE: allddd
-allddd:
-
-
 .PHONY: all-down
 all-down:
 	-docker rm -f ${APP_CONTAINER} 2>/dev/null
