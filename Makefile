@@ -22,6 +22,7 @@ all:
 .PHONY: app-down
 app-down:
 	${DC} -f ${APP_FILE} down
+	-docker rm -f ${APP_CONTAINER} 2>/dev/null
 
 .PHONY: storages-down
 storages-down:
@@ -31,14 +32,15 @@ storages-down:
 shell:
 	${EXEC} ${APP_CONTAINER} bash
 
-.PHONY: app-logs
+.PHONY: logs
 logs:
 	${LOGS} ${APP_CONTAINER} -f
 
 .PHONY: seed
 seed:
-	${EXEC} -w /fastapi-messenger ${APP_CONTAINER} env PYTHONPATH=. python app/server/seed.py
+	${EXEC} -w /app ${APP_CONTAINER} env PYTHONPATH=. python backend/seed.py
 
 .PHONY: all-down
 all-down:
+	-docker rm -f ${APP_CONTAINER} 2>/dev/null
 	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} down

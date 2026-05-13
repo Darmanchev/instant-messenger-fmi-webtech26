@@ -21,9 +21,6 @@ services:
       timeout: 5s
       retries: 10
 
-volumes:
-  postgres_data:
-
 networks:
   backend:
     driver: bridge
