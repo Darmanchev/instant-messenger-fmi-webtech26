@@ -12,3 +12,14 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+
+.chat-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .chat-sidebar {
+    width: 100%;
+  }
+}

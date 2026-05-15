@@ -43,6 +43,7 @@ export default function Chat() {
   const [search, setSearch]             = useState('')
   const [channelFilter, setChannelFilter] = useState('')
   const [showModal, setShowModal]       = useState(false)
+  const [showSidebar, setShowSidebar]   = useState(true)
   const socketRef = useRef(null)
   const navigate  = useNavigate()
 
@@ -68,6 +69,7 @@ export default function Chat() {
   }, [])
 
   function switchChannel(channel) {
+    setShowSidebar(false)
     setCurrentChannel(channel)
     setSearch('')
     setMessages([])
@@ -175,7 +177,7 @@ export default function Chat() {
       </nav>
 
       <div style={{ height: 'calc(100vh - 56px)', display: 'flex', overflow: 'hidden' }}>
-        <div style={{ width: 300, flexShrink: 0 }} className="border-end bg-white d-flex flex-column">
+        <div className={`chat-sidebar border-end bg-white flex-column ${showSidebar ? 'd-flex' : 'd-none'} d-md-flex`}>
           <div className="p-3 bg-light border-bottom">
             <input
               className="form-control form-control-sm mb-2"
@@ -198,9 +200,15 @@ export default function Chat() {
           />
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }} className="d-flex flex-column">
+        <div style={{ flex: 1, minWidth: 0 }} className={`flex-column ${!showSidebar ? 'd-flex' : 'd-none'} d-md-flex`}>
           <div className="p-3 border-bottom d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
+              <button
+                className="btn btn-link p-0 me-2 d-md-none text-secondary"
+                onClick={() => setShowSidebar(true)}
+              >
+                <i className="bi bi-arrow-left fs-5"></i>
+              </button>
               <span className="fs-5 me-2">{meta?.icon}</span>
               <h6 className="mb-0">{currentChannel ? `# ${currentChannel.name}` : '—'}</h6>
             </div>
