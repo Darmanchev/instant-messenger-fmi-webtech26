@@ -1,3 +1,12 @@
+# Stage 1: Build React frontend
+FROM node:22-slim AS frontend-builder
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Python backend
 FROM python:3.13.1-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -19,4 +28,11 @@ RUN pip install --upgrade pip && \
 
 COPY ./backend/ ./backend/
 
+# Copy built frontend from stage 1
+COPY --from=frontend-builder /frontend/dist ./backend/static
+
+COPY start.sh ./start.sh
+RUN chmod +x start.sh
+
 EXPOSE 8000
+CMD ["./start.sh"]
