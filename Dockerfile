@@ -29,7 +29,7 @@ RUN pip install --upgrade pip && \
 COPY ./backend/ ./backend/
 
 # Copy built frontend from stage 1
-COPY --from=frontend-builder /frontend/dist ./backend/static
+COPY --from=frontend-builder /backend/static ./backend/static
 
 COPY start.sh ./start.sh
 RUN chmod +x start.sh
