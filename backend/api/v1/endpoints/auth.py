@@ -7,12 +7,20 @@ from backend.models.user import User
 from backend.schemas.user import UserCreate, UserOut
 from backend.schemas.token import Token, LoginData
 from backend.core.auth import hash_password, verify_password, create_token, get_current_user
+from backend.core.passwords import password_manager
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=Token, status_code=201)
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
+    validation_error = password_manager.build_validation_error(data.password)
+    if validation_error:
+        raise HTTPException(
+            status_code=400,
+            detail=validation_error,
+        )
+
     # check if email is already registered
     result = await db.execute(select(User).where(User.email == data.email))
     if result.scalar_one_or_none():

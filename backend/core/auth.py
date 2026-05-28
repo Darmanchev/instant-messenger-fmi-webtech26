@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,15 +8,13 @@ from sqlalchemy import select
 from backend.core.config import settings
 from backend.db.database import get_db
 from backend.models.user import User
-
-# create password hash
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from backend.core.passwords import password_manager
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return password_manager.hash_password(password)
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return password_manager.verify_password(plain, hashed)
 
 # create JWT
 def create_token(user_id: int) -> str:

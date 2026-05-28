@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import PasswordRequirements from '../components/PasswordRequirements'
+import { evaluatePassword, isPasswordStrong } from '../password/passwordPolicy'
 
 export default function Register() {
   const [username, setUsername] = useState('')
@@ -8,6 +10,9 @@ export default function Register() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
   const navigate = useNavigate()
+  const showPasswordRequirements = password.length > 0
+  const passwordRules = evaluatePassword(password)
+  const hasWeakPassword = !isPasswordStrong(password)
 
   useEffect(() => {
     if (localStorage.getItem('token')) navigate('/chat')
@@ -15,8 +20,14 @@ export default function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setLoading(true)
     setError('')
+
+    if (hasWeakPassword) {
+      setError('Password is not strong enough. Please satisfy all listed requirements.')
+      return
+    }
+
+    setLoading(true)
 
     try {
       const res = await fetch('/api/v1/auth/register', {
@@ -27,7 +38,17 @@ export default function Register() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.detail || 'Registration error')
+        if (typeof data.detail === 'string') {
+          setError(data.detail)
+          return
+        }
+
+        if (data.detail?.message) {
+          setError(data.detail.message)
+          return
+        }
+
+        setError('Registration error')
         return
       }
 
@@ -75,8 +96,12 @@ export default function Register() {
               placeholder="Create password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              required minLength={4}
+              required minLength={8}
+              autoComplete="new-password"
             />
+            {showPasswordRequirements && (
+              <PasswordRequirements rules={passwordRules} />
+            )}
           </div>
           <button className="btn btn-success w-100" disabled={loading}>
             {loading ? 'Loading...' : 'Sign up'}
