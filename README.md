@@ -1,55 +1,84 @@
-# 💬 Web Messenger (FMI WebTech 2026)
+# Instant Messenger
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+A small real-time messenger I built for the FMI Web Technologies course. I wanted to go beyond a basic CRUD project, so I added live chat rooms, authentication and message history in one full-stack application.
 
-A full-fledged web application for instant messaging. Developed as part of the "Web Technologies" course at FMI.
+## What works
 
-## 💡 About the Project
+- registration and login with JWT tokens;
+- channel creation and deletion;
+- real-time messages over WebSockets;
+- message history, search and deletion;
+- responsive React interface;
+- PostgreSQL persistence and seed data.
 
-This project is a client-server application that implements the core functionality of modern messengers. The main focus is on asynchronous interaction and real-time communication using **WebSockets**.
+## Why I chose this stack
 
-### ✨ Key Features
-- User registration and authentication.
-- Creation of channels/rooms for communication.
-- Real-time messaging.
-- A responsive and modern user interface.
+I used **FastAPI** because its async model works well for both REST endpoints and WebSockets. **React** made it easier to separate the chat, channel list and forms into small components. I chose **PostgreSQL + SQLAlchemy** because users, channels and messages have clear relations and should survive server restarts. Docker keeps the local setup reproducible.
 
-## 🚀 Architecture and Tech Stack
+The hardest part was keeping REST authentication and WebSocket authentication consistent. A WebSocket connection does not use the normal `Authorization` header flow from my fetch requests, so the client passes the JWT during the handshake and the backend validates it before accepting the connection. Switching channels also required closing the previous socket to avoid duplicate messages.
 
-The project is split into two main components:
+## Stack
 
-### Backend Architecture
-Written in **Python**.
-- Uses a framework for building a REST API combined with WebSockets.
-- Dependency management is handled by `Poetry`.
-- Database interactions (CRUD operations for users, channels, and messages).
+- Python 3.12, FastAPI, SQLAlchemy 2, asyncpg
+- React 19, Vite, Bootstrap
+- PostgreSQL 17
+- JWT, WebSockets
+- Poetry, Docker Compose
 
-### User Interface (Frontend)
-Written in **JavaScript / React**.
-- Built with the modern **Vite** bundler.
-- Component-based structure (`ChannelList`, `MessageList`, `CreateChannelModal`).
-- Configured linting (`eslint`).
+## Run with Docker
 
-## ⚙️ Installation and Setup
+Requirements: Docker with Compose, Node.js 22+ and npm.
 
-The project can be easily deployed using Docker.
+```bash
+git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
+cd instant-messenger-fmi-webtech26
+cp .env.example .env
+make all
+make seed
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
-   cd instant-messenger-fmi-webtech26
-   ```
-2. Use the `Makefile` or bash scripts for a quick start:
-   ```bash
-   ./start.sh
-   # or run Docker Compose directly
-   docker-compose -f docker_compose/app.yaml up -d
-   ```
-3. Once running, the frontend will be available in your browser (usually at `http://localhost:5173` or `3000`), and the API Backend will be on its respective port.
+Open [http://localhost:8088](http://localhost:8088). `make all` builds the React app, starts PostgreSQL and starts the FastAPI container.
 
----
-*This project highlights skills in full-stack development, WebSocket integration, and containerization.* 🚀
+Useful commands:
+
+```bash
+make logs       # backend logs
+make shell      # shell inside the backend container
+make all-down   # stop the application and database
+```
+
+## Run in development mode
+
+Start PostgreSQL and the backend:
+
+```bash
+cp .env.example .env
+make storages
+poetry install
+poetry run uvicorn backend.main:app --reload --port 8088
+```
+
+In another terminal:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Vite proxies API and WebSocket traffic to port `8088`.
+
+## Project structure
+
+```text
+backend/api/       REST and WebSocket endpoints
+backend/core/      authentication, passwords and socket manager
+backend/models/    SQLAlchemy models
+backend/schemas/   request and response schemas
+frontend/src/      React pages and components
+docker_compose/    app and PostgreSQL services
+```
+
+## Current status and next steps
+
+This is a working course-project version. The next things I would add are automated tests, database migrations, channel membership and permissions, message editing, reconnect/error handling for WebSockets and stricter production CORS settings.
