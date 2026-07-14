@@ -1,108 +1,55 @@
-## InstantMessenger
+# 💬 Web Messenger (FMI WebTech 2026)
 
-Real-time chat built with FastAPI, PostgreSQL, WebSocket and React.
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-**Stack:** FastAPI · PostgreSQL · WebSocket · JWT · React · Bootstrap 5 · Docker
+Полноценное веб-приложение для мгновенного обмена сообщениями (Instant Messenger). Разработано в рамках курса "Web Technologies" (Веб-технологии) в FMI. 
 
----
+## 💡 О проекте
 
-## Quick Start
+Проект представляет собой клиент-серверное приложение, реализующее функционал современных мессенджеров. Основной упор сделан на асинхронное взаимодействие и работу в реальном времени с использованием **WebSockets**.
 
-### 1. Clone
-```bash
-git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
-cd instant-messenger-fmi-webtech26
-```
+### ✨ Ключевые возможности
+- Регистрация и авторизация пользователей (с проверкой надежности паролей).
+- Создание каналов/комнат для общения.
+- Обмен сообщениями в реальном времени (Real-time Chat).
+- Отзывчивый и современный интерфейс пользователя (SPA на React).
 
-### 2. Create `.env`
-```bash
-cp .env.example .env
-```
+## 🚀 Архитектура и стек технологий
 
-`.env` по подразбиране е готов за употреба — не е необходимо да променяте нищо.
+Проект разделен на две основные части:
 
-### 3. Start
-```bash
-make all
-```
+### Базовая архитектура (Backend)
+Написан на **Python**.
+- Использование фреймворка для построения REST API (вероятно, FastAPI) + WebSockets.
+- Управление зависимостями через `Poetry`.
+- Взаимодействие с базой данных (CRUD операции для пользователей, каналов, сообщений).
 
-`make all` автоматично ще компилира React-фронтенда и ще стартира контейнерите.
+### Пользовательский интерфейс (Frontend)
+Написан на **JavaScript / React**.
+- Сборка с использованием современного бандлера **Vite**.
+- Компонентная структура (ChannelList, MessageList, CreateChannelModal).
+- Настроен линтинг (`eslint`).
 
-### 4. Open in browser
-```
-http://localhost:8088
-```
+## ⚙️ Установка и запуск
 
-### 5. (Optional) Seed demo data
-```bash
-make seed
-```
+Проект легко разворачивается с помощью Docker.
 
-Demo accounts after seed:
-```
-alice@test.com  / 123456
-bob@test.com    / 123456
-admin@test.com  / admin
-```
-
----
-
-## Commands
-
-| Command | Description |
-|---|---|
-| `make all` | Build frontend + start DB + App |
-| `make all-down` | Stop everything |
-| `make build-frontend` | Rebuild React app only |
-| `make logs` | View app logs |
-| `make shell` | Terminal inside app container |
-| `make seed` | Fill DB with demo data |
-| `make storages` | Start only DB |
-| `make app` | Start only App (DB must be running) |
-| `make app-down` | Stop only App |
+1. Клонируйте репозиторий:
+   ```bash
+   git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
+   cd instant-messenger-fmi-webtech26
+   ```
+2. Используйте `Makefile` или bash-скрипты для быстрого старта:
+   ```bash
+   ./start.sh
+   # или запустите Docker Compose напрямую
+   docker-compose -f docker_compose/app.yaml up -d
+   ```
+3. После запуска фронтенд будет доступен в браузере (по умолчанию на `http://localhost:5173` или `3000`), а API Backend на соответствующем порту.
 
 ---
-
-## Ports
-
-| Service | Port |
-|---|---|
-| App | http://localhost:8088 |
-| PostgreSQL | localhost:5433 |
-| API docs | http://localhost:8088/docs |
-
----
-
-## Project Structure
-
-```
-├── Dockerfile
-├── Makefile
-├── .env.example
-├── docker_compose/
-│   ├── app.yaml        # app container
-│   └── storages.yaml   # postgres container
-├── backend/
-│   ├── main.py
-│   ├── seed.py
-│   ├── api/v1/
-│   │   └── endpoints/  # auth, channels, messages, ws
-│   ├── core/           # auth, config, websocket
-│   ├── db/
-│   ├── models/
-│   └── schemas/
-└── frontend/
-    ├── src/
-    │   ├── pages/      # Login, Register, Chat
-    │   └── components/ # ChannelList, MessageList, MessageInput, CreateChannelModal
-    ├── vite.config.js
-    └── package.json
-```
-
----
-
-## Development (frontend hot-reload)
-
-```bash
-cd frontend && npm run dev
-```
+*Проект демонстрирует навыки фуллстек-разработки, работы с веб-сокетами и контейнеризацией.* 🚀
