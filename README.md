@@ -6,50 +6,50 @@
 ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-Полноценное веб-приложение для мгновенного обмена сообщениями (Instant Messenger). Разработано в рамках курса "Web Technologies" (Веб-технологии) в FMI. 
+A full-fledged web application for instant messaging. Developed as part of the "Web Technologies" course at FMI.
 
-## 💡 О проекте
+## 💡 About the Project
 
-Проект представляет собой клиент-серверное приложение, реализующее функционал современных мессенджеров. Основной упор сделан на асинхронное взаимодействие и работу в реальном времени с использованием **WebSockets**.
+This project is a client-server application that implements the core functionality of modern messengers. The main focus is on asynchronous interaction and real-time communication using **WebSockets**.
 
-### ✨ Ключевые возможности
-- Регистрация и авторизация пользователей (с проверкой надежности паролей).
-- Создание каналов/комнат для общения.
-- Обмен сообщениями в реальном времени (Real-time Chat).
-- Отзывчивый и современный интерфейс пользователя (SPA на React).
+### ✨ Key Features
+- User registration and authentication (with strong password policy enforcement).
+- Creation of channels/rooms for communication.
+- Real-time messaging (Real-time Chat).
+- A responsive and modern user interface (React SPA).
 
-## 🚀 Архитектура и стек технологий
+## 🚀 Architecture and Tech Stack
 
-Проект разделен на две основные части:
+The project is split into two main components:
 
-### Базовая архитектура (Backend)
-Написан на **Python**.
-- Использование фреймворка для построения REST API (вероятно, FastAPI) + WebSockets.
-- Управление зависимостями через `Poetry`.
-- Взаимодействие с базой данных (CRUD операции для пользователей, каналов, сообщений).
+### Backend Architecture
+Written in **Python**.
+- Uses a framework for building a REST API (likely FastAPI) combined with WebSockets.
+- Dependency management is handled by `Poetry`.
+- Database interactions (CRUD operations for users, channels, and messages).
 
-### Пользовательский интерфейс (Frontend)
-Написан на **JavaScript / React**.
-- Сборка с использованием современного бандлера **Vite**.
-- Компонентная структура (ChannelList, MessageList, CreateChannelModal).
-- Настроен линтинг (`eslint`).
+### User Interface (Frontend)
+Written in **JavaScript / React**.
+- Built with the modern **Vite** bundler.
+- Component-based structure (`ChannelList`, `MessageList`, `CreateChannelModal`).
+- Configured linting (`eslint`).
 
-## ⚙️ Установка и запуск
+## ⚙️ Installation and Setup
 
-Проект легко разворачивается с помощью Docker.
+The project can be easily deployed using Docker.
 
-1. Клонируйте репозиторий:
+1. Clone the repository:
    ```bash
    git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
    cd instant-messenger-fmi-webtech26
    ```
-2. Используйте `Makefile` или bash-скрипты для быстрого старта:
+2. Use the `Makefile` or bash scripts for a quick start:
    ```bash
    ./start.sh
-   # или запустите Docker Compose напрямую
+   # or run Docker Compose directly
    docker-compose -f docker_compose/app.yaml up -d
    ```
-3. После запуска фронтенд будет доступен в браузере (по умолчанию на `http://localhost:5173` или `3000`), а API Backend на соответствующем порту.
+3. Once running, the frontend will be available in your browser (usually at `http://localhost:5173` or `3000`), and the API Backend will be on its respective port.
 
 ---
-*Проект демонстрирует навыки фуллстек-разработки, работы с веб-сокетами и контейнеризацией.* 🚀
+*This project highlights skills in full-stack development, WebSocket integration, and containerization.* 🚀
