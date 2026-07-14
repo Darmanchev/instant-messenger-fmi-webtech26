@@ -13,10 +13,10 @@ A full-fledged web application for instant messaging. Developed as part of the "
 This project is a client-server application that implements the core functionality of modern messengers. The main focus is on asynchronous interaction and real-time communication using **WebSockets**.
 
 ### ✨ Key Features
-- User registration and authentication (with strong password policy enforcement).
+- User registration and authentication.
 - Creation of channels/rooms for communication.
-- Real-time messaging (Real-time Chat).
-- A responsive and modern user interface (React SPA).
+- Real-time messaging.
+- A responsive and modern user interface.
 
 ## 🚀 Architecture and Tech Stack
 
@@ -24,7 +24,7 @@ The project is split into two main components:
 
 ### Backend Architecture
 Written in **Python**.
-- Uses a framework for building a REST API (likely FastAPI) combined with WebSockets.
+- Uses a framework for building a REST API combined with WebSockets.
 - Dependency management is handled by `Poetry`.
 - Database interactions (CRUD operations for users, channels, and messages).
 
