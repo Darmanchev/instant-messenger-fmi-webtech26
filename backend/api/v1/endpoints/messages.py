@@ -1,16 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from backend.core.auth import get_current_user
 from backend.db.database import get_db
-from backend.models.message import Message
 from backend.models.channel import Channel
+from backend.models.message import Message
 from backend.models.user import User
 from backend.schemas.message import MessageOut
 
-router = APIRouter(prefix="/channels", tags=["messages"])
+router = APIRouter(
+    prefix="/channels",
+    tags=["messages"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/{channel_id}/messages", response_model=list[MessageOut])
@@ -48,6 +52,7 @@ async def search_messages(
         .order_by(Message.sent_at.asc())
     )
     return result.scalars().all()
+
 
 @router.delete("/{channel_id}/messages/{message_id}", status_code=204)
 async def delete_message(

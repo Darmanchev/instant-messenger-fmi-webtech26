@@ -4,6 +4,7 @@ LOGS = docker logs
 ENV = --env-file .env
 APP_FILE = docker_compose/app.yaml
 STORAGES_FILE = docker_compose/storages.yaml
+STORAGES_DEV_FILE = docker_compose/storages.dev.yaml
 APP_CONTAINER = instantmessenger_app
 
 
@@ -13,7 +14,7 @@ app:
 
 .PHONY: storages
 storages:
-	${DC} -f ${STORAGES_FILE} ${ENV} up --build -d
+	${DC} -f ${STORAGES_FILE} -f ${STORAGES_DEV_FILE} ${ENV} up --build -d
 
 .PHONY: build-frontend
 build-frontend:
@@ -30,7 +31,7 @@ app-down:
 
 .PHONY: storages-down
 storages-down:
-	${DC} -f ${STORAGES_FILE} down
+	${DC} -f ${STORAGES_FILE} -f ${STORAGES_DEV_FILE} down
 
 .PHONY: app-shell
 shell:

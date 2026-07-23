@@ -9,7 +9,7 @@ A small real-time messenger I built for the FMI Web Technologies course. I wante
 - real-time messages over WebSockets;
 - message history, search and deletion;
 - responsive React interface;
-- PostgreSQL persistence and seed data.
+- PostgreSQL persistence and optional development seed data.
 
 ## Why I chose this stack
 
@@ -33,11 +33,26 @@ Requirements: Docker with Compose, Node.js 22+ and npm.
 git clone https://github.com/Darmanchev/instant-messenger-fmi-webtech26.git
 cd instant-messenger-fmi-webtech26
 cp .env.example .env
+openssl rand -hex 24  # generate POSTGRES_PASSWORD
+openssl rand -hex 32  # generate SECRET_KEY
+```
+
+Put the generated values in `.env`, then run:
+
+```bash
 make all
-make seed
 ```
 
 Open [http://localhost:8088](http://localhost:8088). `make all` builds the React app, starts PostgreSQL and starts the FastAPI container.
+
+To add demo users and channels locally, run the seed explicitly:
+
+```bash
+make seed
+```
+
+The seed is never run during application startup and refuses to run when
+`ENVIRONMENT=production`.
 
 Useful commands:
 
@@ -53,9 +68,22 @@ Start PostgreSQL and the backend:
 
 ```bash
 cp .env.example .env
+openssl rand -hex 24  # generate POSTGRES_PASSWORD
+openssl rand -hex 32  # generate SECRET_KEY
+```
+
+Put the generated values in `.env`. For a backend running on the host, set:
+
+```dotenv
+DATABASE_URL=postgresql+asyncpg://instantmessenger:<POSTGRES_PASSWORD>@127.0.0.1:5433/instantmessenger
+```
+
+Then start the services:
+
+```bash
 make storages
 poetry install
-poetry run uvicorn backend.main:app --reload --port 8088
+poetry run uvicorn backend.main:app --reload --port 8088 --ws-max-size 2048
 ```
 
 In another terminal:
@@ -67,6 +95,26 @@ npm run dev
 ```
 
 Vite proxies API and WebSocket traffic to port `8088`.
+
+`make storages` binds PostgreSQL only to `127.0.0.1:5433`. `make all` does not
+publish the database port at all.
+
+## Security configuration
+
+- Every channel and message REST endpoint requires a valid JWT.
+- `SECRET_KEY` must be generated from at least 32 random bytes. The application
+  refuses short and known placeholder values.
+- WebSocket payloads are validated, limited to 255 characters and 2048 bytes per
+  frame, and rate-limited. Connections are limited per user and source IP.
+- WebSocket limits are process-local. A multi-instance deployment should use a
+  shared limiter and pub/sub layer such as Redis at the reverse proxy or
+  application boundary.
+- In production, set `ENVIRONMENT=production` and keep `SECRET_KEY`,
+  `DATABASE_URL`, and database credentials in the hosting provider's secret
+  storage. Do not commit a populated `.env`.
+- Production PostgreSQL should be available only over a private network (or be a
+  managed service), require TLS, use a separate long random password, and have
+  automated backups with restore tests.
 
 ## Project structure
 
@@ -81,4 +129,4 @@ docker_compose/    app and PostgreSQL services
 
 ## Current status and next steps
 
-This is a working course-project version. The next things I would add are automated tests, database migrations, channel membership and permissions, message editing, reconnect/error handling for WebSockets and stricter production CORS settings.
+This is a working course-project version. The next things I would add are database migrations, channel membership and permissions, message editing, reconnect/error handling for WebSockets and stricter production CORS settings.

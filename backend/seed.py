@@ -1,14 +1,18 @@
 import asyncio
-from passlib.context import CryptContext
-from backend.db.database import SessionLocal, engine
-from backend.db.base import Base
-from backend.models import User, Channel, Message
+
 from sqlalchemy import select
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from backend.core.config import settings
+from backend.core.passwords import password_manager
+from backend.db.base import Base
+from backend.db.database import SessionLocal, engine
+from backend.models import Channel, Message, User
 
 
 async def seed():
+    if settings.ENVIRONMENT not in {"development", "test"}:
+        raise RuntimeError("Demo seed is allowed only in development or test")
+
     # create tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -23,18 +27,26 @@ async def seed():
         user_data = [
             ("alice", "alice@test.com", "123456"),
             ("bob", "bob@test.com", "123456"),
-            ("admin", "admin@test.com", "admin")
+            ("admin", "admin@test.com", "admin"),
         ]
-        users = [User(username=u, email=e, password_hash=pwd_context.hash(p)) for u, e, p in user_data]
+        users = [
+            User(
+                username=username,
+                email=email,
+                password_hash=password_manager.hash_password(password),
+            )
+            for username, email, password in user_data
+        ]
         db.add_all(users)
-        await db.flush()  # получаем id пользователей без commit
+        await db.flush()
 
         # create channels
         channel_names = ["general", "random", "tech", "announcements", "design"]
         channels = [Channel(name=name, created_by=users[2].id) for name in channel_names]
         db.add_all(channels)
         await db.commit()
-        for obj in users + channels: await db.refresh(obj)
+        for obj in users + channels:
+            await db.refresh(obj)
 
         messages = [
             Message(content="HI! 👋", channel=channels[0], author=users[0]),

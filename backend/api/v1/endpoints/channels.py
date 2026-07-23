@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.auth import get_current_user
 from backend.db.database import get_db
 from backend.models.channel import Channel
-from backend.schemas.channel import ChannelOut, ChannelCreate
 from backend.models.user import User
+from backend.schemas.channel import ChannelCreate, ChannelOut
 
-router = APIRouter(prefix="/channels", tags=["channels"])
+router = APIRouter(
+    prefix="/channels",
+    tags=["channels"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=list[ChannelOut])
@@ -28,10 +32,10 @@ async def get_channel(channel_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/", response_model=ChannelOut, status_code=201)
 async def create_channel(
-    data: ChannelCreate, 
+    data: ChannelCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    ):
+):
     # check if channel with that name already exists
     result = await db.execute(select(Channel).where(Channel.name == data.name))
     if result.scalar_one_or_none():
@@ -46,10 +50,10 @@ async def create_channel(
 
 @router.delete("/{channel_id}", status_code=204)
 async def delete_channel(
-    channel_id: int, 
+    channel_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    ):
+):
     result = await db.execute(select(Channel).where(Channel.id == channel_id))
     channel = result.scalar_one_or_none()
     if not channel:
